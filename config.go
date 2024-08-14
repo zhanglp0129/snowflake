@@ -11,7 +11,7 @@ type SnowFlakeConfig struct {
 	// 时钟序列位数，用于解决时钟回拨问题，默认为0
 	ClockSequenceBits uint8
 	// 机器码位数，默认为10
-	MachineBits uint8
+	MachineIdBits uint8
 	// 序列号位数，默认为12
 	SeqBits uint8
 }
@@ -22,7 +22,7 @@ var (
 		StartTimestamp:    0,
 		TimestampBits:     41,
 		ClockSequenceBits: 0,
-		MachineBits:       10,
+		MachineIdBits:     10,
 		SeqBits:           12,
 	}
 )
