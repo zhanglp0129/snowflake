@@ -8,3 +8,6 @@
 ```shell
 go get -u github.com/zhanglp0129/snowflake
 ```
+
+## LICENSE
+MIT
