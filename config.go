@@ -8,8 +8,6 @@ type SnowFlakeConfig struct {
 	StartTimestamp int64
 	// 时间戳位数，默认为41
 	TimestampBits uint8
-	// 时钟序列位数，用于解决时钟回拨问题，默认为0
-	ClockSequenceBits uint8
 	// 机器码位数，默认为10
 	MachineIdBits uint8
 	// 序列号位数，默认为12
@@ -19,11 +17,10 @@ type SnowFlakeConfig struct {
 var (
 	// DefaultConfig 雪花算法默认配置
 	DefaultConfig = SnowFlakeConfig{
-		StartTimestamp:    0,
-		TimestampBits:     41,
-		ClockSequenceBits: 0,
-		MachineIdBits:     10,
-		SeqBits:           12,
+		StartTimestamp: 0,
+		TimestampBits:  41,
+		MachineIdBits:  10,
+		SeqBits:        12,
 	}
 )
 

@@ -15,9 +15,6 @@ type Worker struct {
 	timestamp       int64 // 生成id的时间戳，从startTimestamp开始
 	timestampMax    int64
 	timestampOffset uint8
-	clockSeq        int64
-	clockSeqMax     int64
-	clockSeqOffset  uint8
 	machineId       int64
 	machineIdOffset uint8
 	seq             int64
@@ -28,7 +25,7 @@ type Worker struct {
 // NewWorker 创建一个雪花算法的工作节点
 func NewWorker(c SnowFlakeConfig, machineId int64) (*Worker, error) {
 	// 检查配置
-	sumBits := c.TimestampBits + c.ClockSequenceBits + c.MachineIdBits + c.SeqBits
+	sumBits := c.TimestampBits + c.MachineIdBits + c.SeqBits
 	if sumBits != 63 {
 		return nil, errors.New(fmt.Sprintf("the sum of bits is %d, not 63", sumBits))
 	}
@@ -44,10 +41,7 @@ func NewWorker(c SnowFlakeConfig, machineId int64) (*Worker, error) {
 		startTimestamp:  c.StartTimestamp,
 		timestamp:       0,
 		timestampMax:    (1 << c.TimestampBits) - 1,
-		timestampOffset: c.SeqBits + c.MachineIdBits + c.ClockSequenceBits,
-		clockSeq:        0,
-		clockSeqMax:     (1 << c.ClockSequenceBits) - 1,
-		clockSeqOffset:  c.SeqBits + c.MachineIdBits,
+		timestampOffset: c.SeqBits + c.MachineIdBits,
 		machineId:       machineId,
 		machineIdOffset: c.SeqBits,
 		seq:             0,
@@ -61,9 +55,6 @@ func (w *Worker) getId() (int64, error) {
 	if w.timestamp < 0 || w.timestamp > w.timestampMax {
 		return 0, errors.New(fmt.Sprintf("timestamp %d is illegal", w.timestamp))
 	}
-	if w.clockSeq < 0 || w.clockSeq > w.clockSeqMax {
-		return 0, errors.New(fmt.Sprintf("clock sequence %d is illegal", w.clockSeq))
-	}
 	if w.seq < 0 || w.seq > w.seqMax {
 		return 0, errors.New(fmt.Sprintf("sequence %d is illegal", w.seq))
 	}
@@ -71,7 +62,6 @@ func (w *Worker) getId() (int64, error) {
 	// 生成id
 	var id int64 = 0
 	id |= w.timestamp << w.timestampOffset
-	id |= w.clockSeq << w.clockSeqOffset
 	id |= w.machineId << w.machineIdOffset
 	id |= w.seq << w.seqOffset
 
