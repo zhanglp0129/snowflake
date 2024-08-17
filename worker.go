@@ -11,7 +11,6 @@ import (
 // Worker 工作节点
 type Worker struct {
 	mtx             sync.Mutex
-	startTimestamp  int64 // 起始时间戳
 	timestamp       int64 // 生成id的时间戳，从startTimestamp开始
 	timestampMax    int64
 	timestampOffset uint8
@@ -38,8 +37,7 @@ func NewWorker(c SnowFlakeConfig, machineId int64) (*Worker, error) {
 
 	return &Worker{
 		mtx:             sync.Mutex{},
-		startTimestamp:  c.StartTimestamp,
-		timestamp:       0,
+		timestamp:       time.Now().UnixMilli() - c.StartTimestamp,
 		timestampMax:    (1 << c.TimestampBits) - 1,
 		timestampOffset: c.SeqBits + c.MachineIdBits,
 		machineId:       machineId,
@@ -72,23 +70,17 @@ func (w *Worker) generateId() (int64, error) {
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
-	now := time.Now().UnixMilli() - w.startTimestamp
-
-	if now > w.timestamp {
-		// 新时间
-		w.timestamp = now
+	if w.seq == w.seqMax {
 		w.seq = 0
-	} else if now == w.timestamp {
-		// 旧时间
-		w.seq++
+		w.timestamp++
 	} else {
-		// 时钟回拨
-		return 0, errors.New("a clock rollback problem occurred")
+		w.seq++
 	}
 
 	return w.getId()
 }
 
+// GenerateId 生成id
 func (w *Worker) GenerateId() (int64, error) {
 	for i := 0; i < 3; i++ {
 		id, err := w.generateId()
