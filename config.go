@@ -24,6 +24,13 @@ var (
 	}
 )
 
+// NewDefaultConfigWithStartTime 创建一个雪花算法默认配置，并指定起始时间
+func NewDefaultConfigWithStartTime(startTime time.Time) SnowFlakeConfig {
+	cfg := DefaultConfig
+	cfg.SetStartTime(startTime)
+	return cfg
+}
+
 // SetStartTime 设置起始时间
 func (c *SnowFlakeConfig) SetStartTime(startTime time.Time) {
 	c.StartTimestamp = startTime.UnixMilli()
