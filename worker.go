@@ -3,7 +3,6 @@ package snowflake
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"sync"
 	"time"
 )
@@ -58,7 +57,7 @@ func (w *Worker) getId() (int64, error) {
 	}
 
 	// 生成id
-	var id int64 = 0
+	var id int64
 	id |= w.timestamp << w.timestampOffset
 	id |= w.machineId << w.machineIdOffset
 	id |= w.seq << w.seqOffset
@@ -66,10 +65,19 @@ func (w *Worker) getId() (int64, error) {
 	return id, nil
 }
 
-func (w *Worker) generateId() (int64, error) {
+// GenerateId 生成雪花id
+func (w *Worker) GenerateId() (int64, error) {
+	// 加锁
 	w.mtx.Lock()
 	defer w.mtx.Unlock()
 
+	// 生成id
+	id, err := w.getId()
+	if err != nil {
+		return 0, err
+	}
+
+	// 更新参数
 	if w.seq == w.seqMax {
 		w.seq = 0
 		w.timestamp++
@@ -77,24 +85,5 @@ func (w *Worker) generateId() (int64, error) {
 		w.seq++
 	}
 
-	return w.getId()
-}
-
-// GenerateId 生成id
-func (w *Worker) GenerateId() (int64, error) {
-	for i := 0; i < 3; i++ {
-		id, err := w.generateId()
-		if err == nil {
-			return id, nil
-		}
-		// 出现错误，等待1-5毫秒后重试
-		wait(1, 5)
-	}
-	return w.generateId()
-}
-
-// 随机等待一个时间，单位为毫秒
-func wait(from, to int64) {
-	waitMilli := rand.Int63()%(to-from+1) + from
-	time.Sleep(time.Duration(waitMilli) * time.Millisecond)
+	return id, err
 }
