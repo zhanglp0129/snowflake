@@ -1,8 +1,6 @@
 package snowflake
 
 import (
-	"errors"
-	"fmt"
 	"sync"
 	"time"
 )
@@ -25,13 +23,13 @@ func NewWorker(c SnowFlakeConfig, machineId int64) (WorkerInterface, error) {
 	// 检查配置
 	sumBits := c.TimestampBits + c.MachineIdBits + c.SeqBits
 	if sumBits != 63 {
-		return nil, errors.New(fmt.Sprintf("the sum of bits is %d, not 63", sumBits))
+		return nil, BitsSumError
 	}
 
 	// 检查机器码
 	var machineMax int64 = (1 << c.MachineIdBits) - 1
 	if machineId < 0 || machineId > machineMax {
-		return nil, errors.New(fmt.Sprintf("machine id %d is illegal", machineId))
+		return nil, MachineIdIllegal
 	}
 
 	return &Worker{
@@ -50,10 +48,10 @@ func NewWorker(c SnowFlakeConfig, machineId int64) (WorkerInterface, error) {
 func (w *Worker) getId() (int64, error) {
 	// 先校验参数
 	if w.timestamp < 0 || w.timestamp > w.timestampMax {
-		return 0, errors.New(fmt.Sprintf("timestamp %d is illegal", w.timestamp))
+		return 0, TimestampIllegal
 	}
 	if w.seq < 0 || w.seq > w.seqMax {
-		return 0, errors.New(fmt.Sprintf("sequence %d is illegal", w.seq))
+		return 0, SeqIllegal
 	}
 
 	// 生成id
