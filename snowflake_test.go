@@ -89,3 +89,35 @@ func TestGenerateIdConcurrency(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestGetMachineId(t *testing.T) {
+	config := SnowFlakeConfig{
+		StartTimestamp: time.Now().UnixMilli(),
+		TimestampBits:  41,
+		MachineIdBits:  10,
+		SeqBits:        12,
+	}
+
+	workers := make([]*Worker, 0, 16)
+	for i := 0; i < 16; i++ {
+		worker, err := NewWorker(config, int64(i))
+		if err != nil {
+			t.Fatal(err)
+		}
+		workers = append(workers, worker)
+	}
+
+	// 生成id
+	for i, worker := range workers {
+		for j := 0; j < 100; j++ {
+			id, err := worker.GenerateId()
+			if err != nil {
+				t.Fatal(err)
+			}
+			machineId, err := GetMachineId(config, id)
+			if machineId != int64(i) {
+				t.Fatal("机器码错误")
+			}
+		}
+	}
+}
