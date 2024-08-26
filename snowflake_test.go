@@ -98,7 +98,7 @@ func TestGetMachineId(t *testing.T) {
 		SeqBits:        12,
 	}
 
-	workers := make([]*Worker, 0, 16)
+	workers := make([]WorkerInterface, 0, 16)
 	for i := 0; i < 16; i++ {
 		worker, err := NewWorker(config, int64(i))
 		if err != nil {

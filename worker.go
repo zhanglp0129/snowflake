@@ -21,7 +21,7 @@ type Worker struct {
 }
 
 // NewWorker 创建一个雪花算法的工作节点
-func NewWorker(c SnowFlakeConfig, machineId int64) (*Worker, error) {
+func NewWorker(c SnowFlakeConfig, machineId int64) (WorkerInterface, error) {
 	// 检查配置
 	sumBits := c.TimestampBits + c.MachineIdBits + c.SeqBits
 	if sumBits != 63 {
